@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 // https://piston-meta.mojang.com/mc/game/version_manifest_v2.json
 use reqwest;
-use serde::{Serialize, Deserialize};
+use serde::{Deserialize, Serialize};
 use serde_json::Value;
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -44,7 +44,7 @@ pub struct Version {
     pub minimum_launcher_version: u32,
     pub release_time: String,
     pub time: String,
-    pub r#type: String
+    pub r#type: String,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
@@ -76,7 +76,7 @@ pub struct Library {
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct Downloads {
     pub artifact: Option<Artifact>,
-    pub classifiers: Option<HashMap<String, Artifact>>
+    pub classifiers: Option<HashMap<String, Artifact>>,
 }
 
 /*
@@ -104,7 +104,11 @@ pub async fn get_version(version_id: String) -> Version {
     let version_manifest = get_versions().await;
 
     // find the chosen version
-    let selected_version = version_manifest.versions.into_iter().find(|v| v.id == version_id).expect("Failed to find version in manifest");
+    let selected_version = version_manifest
+        .versions
+        .into_iter()
+        .find(|v| v.id == version_id)
+        .expect("Failed to find version in manifest");
 
     // request and deserialized the version
     let version = reqwest::get(selected_version.url)
@@ -114,18 +118,19 @@ pub async fn get_version(version_id: String) -> Version {
         .await
         .expect("Failed to parse version manifest");
 
-    return version
+    return version;
 }
 
 #[tauri::command]
 pub async fn get_versions() -> VersionManifest {
     // get the deserialized data form piston-meta
-    let version_manifest = reqwest::get("https://piston-meta.mojang.com/mc/game/version_manifest_v2.json")
-        .await
-        .expect("Failed to get version manifest")
-        .json::<VersionManifest>()
-        .await
-        .expect("Failed to parse version manifest");
+    let version_manifest =
+        reqwest::get("https://piston-meta.mojang.com/mc/game/version_manifest_v2.json")
+            .await
+            .expect("Failed to get version manifest")
+            .json::<VersionManifest>()
+            .await
+            .expect("Failed to parse version manifest");
 
     // return the deserialized data
     version_manifest
@@ -134,15 +139,20 @@ pub async fn get_versions() -> VersionManifest {
 #[tauri::command]
 pub async fn get_versions_types() -> Vec<String> {
     // get the deserialized data form piston-meta
-    let version_manifest = reqwest::get("https://piston-meta.mojang.com/mc/game/version_manifest_v2.json")
-        .await
-        .expect("Failed to get version manifest")
-        .json::<VersionManifest>()
-        .await
-        .expect("Failed to parse version manifest");
+    let version_manifest =
+        reqwest::get("https://piston-meta.mojang.com/mc/game/version_manifest_v2.json")
+            .await
+            .expect("Failed to get version manifest")
+            .json::<VersionManifest>()
+            .await
+            .expect("Failed to parse version manifest");
 
     // get all types from all versions
-    let mut ver_types: Vec<String> = version_manifest.versions.into_iter().map(|v| v.r#type.clone()).collect();
+    let mut ver_types: Vec<String> = version_manifest
+        .versions
+        .into_iter()
+        .map(|v| v.r#type.clone())
+        .collect();
 
     // sort them
     ver_types.sort();
@@ -150,6 +160,5 @@ pub async fn get_versions_types() -> Vec<String> {
     // remove duplicate
     ver_types.dedup();
 
-    return ver_types
+    return ver_types;
 }
-

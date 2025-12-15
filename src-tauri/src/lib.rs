@@ -5,7 +5,11 @@ mod commands;
 pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_opener::init())
-        .invoke_handler(tauri::generate_handler![commands::launch_game::launch_game, commands::version::get_versions, commands::version::get_versions_types])
+        .invoke_handler(tauri::generate_handler![
+            commands::launch_game::launch_game,
+            commands::version::get_versions,
+            commands::version::get_versions_types
+        ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }
