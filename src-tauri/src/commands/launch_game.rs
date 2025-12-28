@@ -1,5 +1,5 @@
 use crate::commands::downloader;
-use crate::commands::version::get_version;
+use crate::commands::version::{Version, get_version};
 use std::fs;
 use std::path::{absolute, Path};
 use std::process::Command;
@@ -25,17 +25,11 @@ fn create_folders() {
     }
 }
 
-fn get_libraries(dir: &Path) -> Vec<String> {
+fn get_libraries(version: Version) -> Vec<String> {
     let mut libraries = Vec::new();
-    let dir = fs::read_dir(dir).expect("Failed to read dir");
-    for file in dir {
-        let path = file.unwrap().path();
-        if path.is_dir() {
-            libraries.extend(get_libraries(&path));
-        } else {
-            let absolute = absolute(&path).unwrap().to_string_lossy().to_string();
-            libraries.push(absolute);
-        }
+    let libraries_path = Path::new("minecraft/libraries");
+    for lib in version.libraries {
+        libraries.push(libraries_path.join(lib.downloads.artifact.unwrap().path).to_string_lossy().to_string());
     }
     libraries
 }
@@ -50,7 +44,7 @@ pub async fn launch_game(username: String, version: String) {
         version.clone()
     );
     let version = get_version(version).await;
-    let libraries = get_libraries(Path::new(LIBRARIES_FOLDER));
+    let libraries = get_libraries(version);
     let _separator = ":";
     #[cfg(target_os = "windows")]
     let _separator = ";";
